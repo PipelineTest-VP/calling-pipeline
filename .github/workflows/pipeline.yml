@@ -1,0 +1,26 @@
+name: DependencyDeltaPipeline
+
+# Controls when the workflow will run
+on: pull_request
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks out pipeline repository
+      - name: 'Checkout pipeline repo'
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      # Updated the dependency details repo
+      - name: check the diff for dependencies in package.json
+        uses: ./.github/actions/get-dependencies-delta
+        with:
+          gthub-org-name: ${{ secrets.GTHUB_ORGNAME }}
+          gthub-username: ${{ secrets.GTHUB_USERNAME }}
+          gthub-token: ${{ secrets.GTHUB_TOKEN }}
+          gthub-user: ${{secrets.GTHUB_USER}}
+          gthub-user-email: ${{secrets.GTHUB_USER_EMAIL}}
+          dependency-repo-name: 'dependency-details'
