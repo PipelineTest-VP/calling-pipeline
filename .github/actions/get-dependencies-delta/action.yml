@@ -25,6 +25,10 @@ inputs:
     description: 'Github repo name for updating the dependency details'
     required: false
     default: ''
+  child-pipeline-repo-name:
+    description: 'Github repo name for child pipeline'
+    required: false
+    default: ''
 
 runs:
   using: 'node12'

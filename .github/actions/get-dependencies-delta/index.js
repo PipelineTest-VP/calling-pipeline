@@ -20,8 +20,13 @@ async function main() {
         const gthubUser = core.getInput('gthub-user');
         const gthubUserEmail = core.getInput('gthub-user-email');
         const dependencyRepoName = core.getInput('dependency-repo-name') || "dependency-details";
+        const chilePipelineRepoName = core.getInput('child-pipeline-repo-name') || "child-pipeline";
 
         octokit = new Octokit({ auth: gthubToken });
+
+        const ev = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
+        console.log("ev values: ", ev);
+        console.log("process env: ", process.env);
 
         await shell.mkdir('-p', 'temp');
         await shell.cd('temp');
@@ -52,6 +57,33 @@ async function main() {
             }
 
             console.log("nodeDeltaDependencies: ", JSON.stringify(nodeDeltaDependencies));
+
+            /*nodeDeltaDependencies.forEach(x => {
+                const ev = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
+                console.log("ev: ", ev);
+                const prNum = ev.pull_request.number;
+
+                await octokit.request('POST /repos/{owner}/{repo}/dispatches', {
+                    owner: orgName,
+                    repo: chilePipelineRepoName,
+                    event_type: 'snow-request',
+                    client_payload: {
+                        AppName: "Sample App",
+                        AppCMDBID: "CMDB12345678",
+                        RequestorName: gthubUser,
+                        ProjectName: "",
+                        Service_req_number: "",
+                        Message: "",
+                        PackageRegistry: "",
+                        PackageName: x.name,
+                        DockerImageName: "",
+                        GroupId: "",
+                        ArtifactId: "",
+                        VersionNumber: "",
+                        Platform: ""
+                    }
+                });
+            });*/
         }
 
         if(fs.existsSync(`../pom.xml`)) {
@@ -97,19 +129,6 @@ async function main() {
         await shell.rm('-rf', 'temp');
     } catch (error) {
         console.log(error);
-    }
-}
-
-async function getDependencyRepoStatus(orgName, dependencyRepoName) {
-    try {
-        const response = await octokit.rest.repos.get({
-            owner: orgName,
-            repo: dependencyRepoName
-        });
-
-        return true;
-    } catch (error) {
-        return false;
     }
 }
 
