@@ -60,18 +60,22 @@ async function main() {
                     repo: childPipelineRepoName,
                     event_type: 'snow-request',
                     client_payload: {
-                        AppName: "Sample App",
-                        AppCMDBID: "CMDB12345678",
+                        ApplicationDetails: {
+                            AppName: "Sample NPM App",
+                            AppCMDBID: "CMDB12345678",
+                            ProjectName: "Sample NPM Project"
+                        },
+                        DependencyDetails: {
+                            PackageRegistry: "NPM",
+                            PackageName: x.name,
+                            DockerImageName: "",
+                            GroupId: "",
+                            ArtifactId: "",
+                            VersionNumber: x.version
+                        },
                         RequestorName: process.env.GITHUB_ACTOR,
-                        ProjectName: "Sample Project",
                         Service_req_number: srNum,
-                        Message: "Test Message",
-                        PackageRegistry: "NPM",
-                        PackageName: x.name,
-                        DockerImageName: "",
-                        GroupId: "",
-                        ArtifactId: "",
-                        VersionNumber: x.version,
+                        Message: "Test Message NPM",
                         Platform: ""
                     }
                 });
@@ -125,18 +129,22 @@ async function main() {
                     repo: childPipelineRepoName,
                     event_type: 'snow-request',
                     client_payload: {
-                        AppName: "Sample App",
-                        AppCMDBID: "CMDB12345678",
+                        ApplicationDetails: {
+                            AppName: "Sample Maven App",
+                            AppCMDBID: "CMDB12345678",
+                            ProjectName: "Sample Maven Project"
+                        },
+                        DependencyDetails: {
+                            PackageRegistry: "Maven",
+                            PackageName: x.name,
+                            DockerImageName: "",
+                            GroupId: x.groupId,
+                            ArtifactId: x.artifactId,
+                            VersionNumber: x.version
+                        },
                         RequestorName: process.env.GITHUB_ACTOR,
-                        ProjectName: "Sample Project",
                         Service_req_number: srNum,
-                        Message: "Test Message",
-                        PackageRegistry: "Maven",
-                        PackageName: "",
-                        DockerImageName: "",
-                        GroupId: x.groupId,
-                        ArtifactId: x.artifactId,
-                        VersionNumber: x.version,
+                        Message: "Test Message Maven",
                         Platform: ""
                     }
                 });
