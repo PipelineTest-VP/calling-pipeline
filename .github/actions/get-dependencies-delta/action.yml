@@ -9,20 +9,16 @@ inputs:
     description: 'Github service account username'
     required: true
     default: ''
-  gthub-user:
-    description: 'Github service account user'
-    required: true
-    default: ''
-  gthub-user-email:
-    description: 'Github service account user email'
-    required: true
-    default: ''
   gthub-token:
     description: 'Github service account token'
     required: true
     default: ''
   dependency-repo-name:
     description: 'Github repo name for updating the dependency details'
+    required: false
+    default: ''
+  child-pipeline-repo-name:
+    description: 'Github repo name for child pipeline'
     required: false
     default: ''
 

@@ -17,9 +17,8 @@ async function main() {
         const orgName = core.getInput('gthub-org-name');
         const gthubUsername = core.getInput('gthub-username');
         const gthubToken = core.getInput('gthub-token');
-        const gthubUser = core.getInput('gthub-user');
-        const gthubUserEmail = core.getInput('gthub-user-email');
         const dependencyRepoName = core.getInput('dependency-repo-name') || "dependency-details";
+        const childPipelineRepoName = core.getInput('child-pipeline-repo-name') || "child-pipeline";
 
         octokit = new Octokit({ auth: gthubToken });
 
@@ -28,7 +27,8 @@ async function main() {
 
         const dependencyRepoURL = `https://${gthubUsername}:${gthubToken}@github.com/${orgName}/${dependencyRepoName}.git`
         await shell.exec(`git clone ${dependencyRepoURL}`);
-
+        
+        let srNum = 1;
         if(fs.existsSync(`../package.json`)) {
             let nodeDeltaDependencies = [];
 
@@ -52,6 +52,36 @@ async function main() {
             }
 
             console.log("nodeDeltaDependencies: ", JSON.stringify(nodeDeltaDependencies));
+
+            for(let loopVar = 0; loopVar < nodeDeltaDependencies.length; loopVar++) {
+                const x = nodeDeltaDependencies[loopVar];
+                await octokit.request('POST /repos/{owner}/{repo}/dispatches', {
+                    owner: orgName,
+                    repo: childPipelineRepoName,
+                    event_type: 'snow-request',
+                    client_payload: {
+                        ApplicationDetails: {
+                            AppName: "Sample NPM App",
+                            AppCMDBID: "CMDB12345678",
+                            ProjectName: "Sample NPM Project"
+                        },
+                        DependencyDetails: {
+                            PackageRegistry: "NPM",
+                            PackageName: x.name,
+                            DockerImageName: "",
+                            GroupId: "",
+                            ArtifactId: "",
+                            VersionNumber: x.version
+                        },
+                        RequestorName: process.env.GITHUB_ACTOR,
+                        Service_req_number: srNum,
+                        Message: "Test Message NPM",
+                        Platform: ""
+                    }
+                });
+
+                srNum++;
+            }
         }
 
         if(fs.existsSync(`../pom.xml`)) {
@@ -91,25 +121,43 @@ async function main() {
                 }
             }
             console.log("mavenDeltaDependencies: ", JSON.stringify(mavenDeltaDependencies));
+            
+            for(let loopVar = 0; loopVar < mavenDeltaDependencies.length; loopVar++) {
+                const x = mavenDeltaDependencies[loopVar];
+                await octokit.request('POST /repos/{owner}/{repo}/dispatches', {
+                    owner: orgName,
+                    repo: childPipelineRepoName,
+                    event_type: 'snow-request',
+                    client_payload: {
+                        ApplicationDetails: {
+                            AppName: "Sample Maven App",
+                            AppCMDBID: "CMDB12345678",
+                            ProjectName: "Sample Maven Project"
+                        },
+                        DependencyDetails: {
+                            PackageRegistry: "Maven",
+                            PackageName: x.name,
+                            DockerImageName: "",
+                            GroupId: x.groupId,
+                            ArtifactId: x.artifactId,
+                            VersionNumber: x.version
+                        },
+                        RequestorName: process.env.GITHUB_ACTOR,
+                        Service_req_number: srNum,
+                        Message: "Test Message Maven",
+                        Platform: ""
+                    }
+                });
+                
+                srNum++;
+            }
         }
 
         await shell.cd('..');
         await shell.rm('-rf', 'temp');
     } catch (error) {
         console.log(error);
-    }
-}
-
-async function getDependencyRepoStatus(orgName, dependencyRepoName) {
-    try {
-        const response = await octokit.rest.repos.get({
-            owner: orgName,
-            repo: dependencyRepoName
-        });
-
-        return true;
-    } catch (error) {
-        return false;
+        core.setFailed(error.message);
     }
 }
 
