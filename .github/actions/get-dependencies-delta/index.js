@@ -17,23 +17,18 @@ async function main() {
         const orgName = core.getInput('gthub-org-name');
         const gthubUsername = core.getInput('gthub-username');
         const gthubToken = core.getInput('gthub-token');
-        const gthubUser = core.getInput('gthub-user');
-        const gthubUserEmail = core.getInput('gthub-user-email');
         const dependencyRepoName = core.getInput('dependency-repo-name') || "dependency-details";
-        const chilePipelineRepoName = core.getInput('child-pipeline-repo-name') || "child-pipeline";
+        const childPipelineRepoName = core.getInput('child-pipeline-repo-name') || "child-pipeline";
 
         octokit = new Octokit({ auth: gthubToken });
-
-        const ev = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
-        console.log("ev values: ", ev);
-        console.log("process env: ", process.env);
 
         await shell.mkdir('-p', 'temp');
         await shell.cd('temp');
 
         const dependencyRepoURL = `https://${gthubUsername}:${gthubToken}@github.com/${orgName}/${dependencyRepoName}.git`
         await shell.exec(`git clone ${dependencyRepoURL}`);
-
+        
+        let srNum = 1;
         if(fs.existsSync(`../package.json`)) {
             let nodeDeltaDependencies = [];
 
@@ -58,32 +53,31 @@ async function main() {
 
             console.log("nodeDeltaDependencies: ", JSON.stringify(nodeDeltaDependencies));
 
-            /*nodeDeltaDependencies.forEach(x => {
-                const ev = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
-                console.log("ev: ", ev);
-                const prNum = ev.pull_request.number;
-
+            for(let loopVar = 0; loopVar < nodeDeltaDependencies.length; loopVar++) {
+                const x = nodeDeltaDependencies[loopVar];
                 await octokit.request('POST /repos/{owner}/{repo}/dispatches', {
                     owner: orgName,
-                    repo: chilePipelineRepoName,
+                    repo: childPipelineRepoName,
                     event_type: 'snow-request',
                     client_payload: {
                         AppName: "Sample App",
                         AppCMDBID: "CMDB12345678",
-                        RequestorName: gthubUser,
-                        ProjectName: "",
-                        Service_req_number: "",
-                        Message: "",
-                        PackageRegistry: "",
+                        RequestorName: process.env.GITHUB_ACTOR,
+                        ProjectName: "Sample Project",
+                        Service_req_number: srNum,
+                        Message: "Test Message",
+                        PackageRegistry: "NPM",
                         PackageName: x.name,
                         DockerImageName: "",
                         GroupId: "",
                         ArtifactId: "",
-                        VersionNumber: "",
+                        VersionNumber: x.version,
                         Platform: ""
                     }
                 });
-            });*/
+
+                srNum++;
+            }
         }
 
         if(fs.existsSync(`../pom.xml`)) {
@@ -123,12 +117,39 @@ async function main() {
                 }
             }
             console.log("mavenDeltaDependencies: ", JSON.stringify(mavenDeltaDependencies));
+            
+            for(let loopVar = 0; loopVar < mavenDeltaDependencies.length; loopVar++) {
+                const x = mavenDeltaDependencies[loopVar];
+                await octokit.request('POST /repos/{owner}/{repo}/dispatches', {
+                    owner: orgName,
+                    repo: childPipelineRepoName,
+                    event_type: 'snow-request',
+                    client_payload: {
+                        AppName: "Sample App",
+                        AppCMDBID: "CMDB12345678",
+                        RequestorName: process.env.GITHUB_ACTOR,
+                        ProjectName: "Sample Project",
+                        Service_req_number: srNum,
+                        Message: "Test Message",
+                        PackageRegistry: "Maven",
+                        PackageName: "",
+                        DockerImageName: "",
+                        GroupId: x.groupId,
+                        ArtifactId: x.artifactId,
+                        VersionNumber: x.version,
+                        Platform: ""
+                    }
+                });
+                
+                srNum++;
+            }
         }
 
         await shell.cd('..');
         await shell.rm('-rf', 'temp');
     } catch (error) {
         console.log(error);
+        core.setFailed(error.message);
     }
 }
 
