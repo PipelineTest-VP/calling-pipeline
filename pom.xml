@@ -15,9 +15,15 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd">
   
   <dependencies>  
     <dependency>  
-      <groupId>junit</groupId>  
-      <artifactId>junit</artifactId>  
+      <groupId>rjunit</groupId>  
+      <artifactId>rjunit</artifactId>  
       <version>4.8.2</version>  
+      <scope>test</scope>  
+    </dependency> 
+    <dependency>  
+      <groupId>sjunit</groupId>  
+      <artifactId>sjunit</artifactId>  
+      <version>1.8.2</version>  
       <scope>test</scope>  
     </dependency>  
   </dependencies>  
