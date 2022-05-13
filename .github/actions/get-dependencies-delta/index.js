@@ -105,12 +105,19 @@ async function main() {
             if(Array.isArray(repoDependcies)) {
                 for(let loopVar = 0; loopVar < repoDependcies.length; loopVar++) {
                     const repoDependcy = repoDependcies[loopVar];
-                    const existingMavenDependency = existingMavenDependencies.find(x => x.groupId === repoDependcy.groupId && x.artifactId === repoDependcy.artifactId);
-                    if(existingMavenDependency) {
-                        if(existingMavenDependency.version && repoDependcy.version && existingMavenDependency.version !== repoDependcy.version) {
-                            mavenDeltaDependencies.push(repoDependcy);
+                    
+                    let dependencyMatches = false;
+                    for(let loopVarExisting = 0; loopVarExisting < existingMavenDependencies.length; loopVarExisting++) {
+                        const existingMavenDependency = existingMavenDependencies[loopVarExisting];
+                        if(existingMavenDependency.groupId === repoDependcy.groupId && existingMavenDependency.artifactId === repoDependcy.artifactId) {
+                            if(existingMavenDependency.version && repoDependcy.version && existingMavenDependency.version === repoDependcy.version) {
+                                dependencyMatches = true;
+                                break;
+                            }
                         }
-                    } else {
+                    }
+
+                    if(!dependencyMatches) {
                         mavenDeltaDependencies.push(repoDependcy);
                     }
                 }
