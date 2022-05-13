@@ -41,12 +41,9 @@ async function main() {
 
             for(let loopVar = 0; loopVar < repoDependcies.length; loopVar++) {
                 const repoDependcy = repoDependcies[loopVar];
-                const existingNodeDependency = existingNodeDependencies.find(x => x.name === repoDependcy.name);
-                if(existingNodeDependency) {
-                    if(existingNodeDependency.version !== repoDependcy.version) {
-                        nodeDeltaDependencies.push(repoDependcy);
-                    }
-                } else {
+                
+                const existingNodeDependency = existingNodeDependencies.find(x => x.name === repoDependcy.name && existingNodeDependency.version === repoDependcy.version);
+                if(!existingNodeDependency) {
                     nodeDeltaDependencies.push(repoDependcy);
                 }
             }
